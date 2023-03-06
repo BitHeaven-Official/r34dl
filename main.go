@@ -18,6 +18,7 @@ import (
 
 	"github.com/logrusorgru/aurora"
 	"golang.org/x/net/proxy"
+	"gopkg.in/matryer/try.v1"
 )
 
 type Post struct {
@@ -200,15 +201,30 @@ func work(wn int, state *workState, wc chan *Post, transport http.Transport) {
 		progress := aurora.Sprintf(aurora.Green("[%d/%d]"), state.Completed, state.Total)
 		workerText := aurora.Sprintf(aurora.Cyan("[w%d]"), wn)
 
-		fmt.Println(aurora.Sprintf(
-			"%s %s Downloading post %d -> %s",
-			progress,
-			workerText,
-			post.ID,
-			getSavePath(post, &state.SaveDirectory),
-		))
+		err := try.Do(func(attempt int) (retry bool, err error) {
+			if attempt == 1 {
+				fmt.Println(aurora.Sprintf(
+					"%s %s Downloading post %d -> %s",
+					progress,
+					workerText,
+					post.ID,
+					getSavePath(post, &state.SaveDirectory),
+				))
+			} else {
+				fmt.Println(aurora.Sprintf(
+					"%s %s (%d) Retry Download post %d -> %s",
+					progress,
+					workerText,
+					attempt,
+					post.ID,
+					getSavePath(post, &state.SaveDirectory),
+				))
+			}
 
-		err := downloadPost(post, state.SaveDirectory, transport)
+			err = downloadPost(post, state.SaveDirectory, transport)
+			return attempt < 5, err
+		})
+
 		if err != nil {
 			fmt.Printf("[w%d] Failed to download post %d: %v\n", wn, post.ID, err)
 			state.Failures++
@@ -268,7 +284,7 @@ func main() {
 	tags := flag.String("tags", "", "Tags to search for")
 	maxConcurrents := flag.Int("concurrents", 30, "Maximum amount of concurrent downloads")
 	saveDirectory := flag.String("out", "dl", "The directory to write the downloaded posts to")
-	postLimit := flag.Int("limit", 9999999999, "Maximum amount of posts to grab from e621")
+	postLimit := flag.Int("limit", 9999999999, "Maximum amount of posts to grab from rule34")
 	proxyAddr := flag.String("proxy", "", "Proxy address to parsing")
 	timeout := flag.Int("timeout", 10, "Timeout proxy to parsing")
 
