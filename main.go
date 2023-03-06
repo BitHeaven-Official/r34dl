@@ -282,7 +282,7 @@ func main() {
 	allPosts := []Post{}
 	nlimit := (*postLimit)
 
-	i := 1
+	i := 0
 	for {
 		fmt.Printf("Fetching page %d...", i)
 
