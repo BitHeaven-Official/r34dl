@@ -229,21 +229,25 @@ func getSavePath(post *Post, directory *string) string {
 func downloadPost(post *Post, directory string, transport http.Transport) error {
 	savePath := getSavePath(post, &directory)
 
-	resp, err := HTTPGet(post.FileURL, transport)
-	if err != nil {
-		return err
-	}
+	if _, err := os.Stat(savePath); err == nil {
+		fmt.Print("File exists, skip...\n")
+	} else {
+		resp, err := HTTPGet(post.FileURL, transport)
+		if err != nil {
+			return err
+		}
 
-	defer resp.Body.Close()
+		defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
 
-	err = ioutil.WriteFile(savePath, body, 0755)
-	if err != nil {
-		return err
+		err = ioutil.WriteFile(savePath, body, 0755)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -264,7 +268,7 @@ func main() {
 	tags := flag.String("tags", "", "Tags to search for")
 	maxConcurrents := flag.Int("concurrents", 30, "Maximum amount of concurrent downloads")
 	saveDirectory := flag.String("out", "dl", "The directory to write the downloaded posts to")
-	postLimit := flag.Int("limit", 1000, "Maximum amount of posts to grab from e621")
+	postLimit := flag.Int("limit", 9999999999, "Maximum amount of posts to grab from e621")
 	proxyAddr := flag.String("proxy", "", "Proxy address to parsing")
 	timeout := flag.Int("timeout", 10, "Timeout proxy to parsing")
 
