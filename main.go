@@ -27,19 +27,13 @@ type Post struct {
 	FileURL      string `json:"file_url"`
 	Directory    int    `json:"directory"`
 	Hash         string `json:"hash"`
+	Width        int    `json:"width"`
 	Height       int    `json:"height"`
 	ID           int    `json:"id"`
 	Image        string `json:"image"`
-	Change       int    `json:"change"`
-	Owner        string `json:"owner"`
-	ParentID     int    `json:"parent_id"`
-	Rating       string `json:"rating"`
-	Sample       int    `json:"sample"`
-	SampleHeight int    `json:"sample_height"`
-	SampleWidth  int    `json:"sample_width"`
-	Score        int    `json:"score"`
-	Tags         string `json:"tags"`
-	Width        int    `json:"width"`
+	Status       string `json:"status"`
+	HasNotes     bool   `json:"has_notes"`
+	CommentCount int    `json:"comment_count"`
 }
 
 // SetProxy
